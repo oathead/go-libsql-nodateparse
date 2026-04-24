@@ -293,6 +293,7 @@ type Connector struct {
 	closeAckCh  <-chan struct{}
 }
 
+// Deprecated: Sync is deprecated and will be removed in a future release. Use the `tursogo` package instead. Learn more: https://tur.so/newsync
 func (c *Connector) Sync() (Replicated, error) {
 	return libsqlSync(c.nativeDbPtr)
 }
