@@ -789,7 +789,6 @@ func (r *rows) Next(dest []sqldriver.Value) error {
 		count = len(r.columnNames)
 	}
 
-Outerloop:
 	for i := 0; i < count; i++ {
 		var columnType C.int
 		var errMsg *C.char
@@ -835,23 +834,13 @@ Outerloop:
 			}
 			str := C.GoString(ptr)
 			C.libsql_free_string(ptr)
-			for _, format := range []string{
-				time.RFC3339Nano,
-				"2006-01-02 15:04:05.999999999-07:00",
-				"2006-01-02T15:04:05.999999999-07:00",
-				"2006-01-02 15:04:05.999999999",
-				"2006-01-02T15:04:05.999999999",
-				"2006-01-02 15:04:05",
-				"2006-01-02T15:04:05",
-				"2006-01-02 15:04",
-				"2006-01-02T15:04",
-				"2006-01-02",
-			} {
-				if t, err := time.ParseInLocation(format, str, time.UTC); err == nil {
-					dest[i] = t
-					continue Outerloop
-				}
-			}
+			// Patched fork (oathead/go-libsql-nodateparse): the upstream driver
+			// tries to parse every TEXT value as a date and returns time.Time
+			// when it matches a known format. That mangles "YYYY-MM-DD" date
+			// strings into RFC3339Nano-formatted timestamps when scanned into
+			// *string. Apps that store dates as TEXT and want strings back
+			// should be allowed to. Standard *sql.DB convention is to scan
+			// into time.Time explicitly when you want a time.Time.
 			dest[i] = str
 		}
 	}

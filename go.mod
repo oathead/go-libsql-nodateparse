@@ -1,4 +1,4 @@
-module github.com/tursodatabase/go-libsql
+module github.com/oathead/go-libsql-nodateparse
 
 go 1.20
 
